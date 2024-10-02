@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vocabulary Exercise</title>
+    </head>
+    <body>
+        <div>English Vocabulary</div>
+        <div>
+            
+            {% if vocab is defined %}
+            <h2>{{vocab.definition}}</h2>
+            <h3>{{vocab.tl1}}</h3>
+            <h3>{{vocab.tl2}}</h3>
+            <h3>{{vocab.tl3}}</h3>
+            <h3>{{vocab.tl4}}</h3>
+            <h3>{{vocab.tl5}}</h3>
+            {% endif %}
+        </div>
+        <form method = "get" action="/vocTest/verify">
+            <label for="vocabulary">Answer:</label><br>
+            <input type="text" id="answer" name="answer" autocomplete="off" autofocus><br>
+            <button type="submit" value="verify">Verify</button>
+            <button type="submit" value="next" formaction="http://localhost:5000/vocTest/next">Next</button>
+        </form>
+        <div>
+            {% if result is defined %}
+            {{result}}
+            {% endif %}
+        </div>
+    </body>
+</html>
