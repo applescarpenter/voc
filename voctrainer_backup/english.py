@@ -6,18 +6,16 @@ import os
 
 class English(Language):
     all = []
-    def __init__(self, vocabulary, tl1, tl2=None, tl3=None, pronunc = None,definition=None, example=None) -> None:
-        super().__init__(vocabulary, tl1, tl2, tl3, pronunc, definition, example)
 
+    def __init__(self, vocabulary, translations=None, pronunc=None, definition=None, example=None) -> None:
+        super().__init__(vocabulary, translations, pronunc, definition, example)
         English.all.append(self)
 
     @classmethod
     def instantiate_from_csv(cls, file):
-        
         with open(file, 'r') as f:
             reader = csv.DictReader(f, delimiter=';')
             english_vocabularies = list(reader)
-        
 
         for english_vocabulary in english_vocabularies:
             # replace empty strings with None
@@ -25,35 +23,33 @@ class English(Language):
                 if v == '':
                     english_vocabulary[k] = None
 
+            # Dynamically collect all translation keys following the tl# naming scheme
+            translations = [english_vocabulary[k] for k in english_vocabulary.keys() if k.startswith('tl') and english_vocabulary[k] is not None]
+
             English(
-                vocabulary = english_vocabulary.get('vocabulary'),
-                tl1 = english_vocabulary.get('tl1'),
-                tl2 = english_vocabulary.get('tl2'),
-                tl3 = english_vocabulary.get('tl3'),
-                pronunc = english_vocabulary.get('pronunc'),
-                definition = english_vocabulary.get('definition'),
-                example = english_vocabulary.get('example')
+                vocabulary=english_vocabulary.get('vocabulary'),
+                translations=translations,
+                pronunc=english_vocabulary.get('pronunc'),
+                definition=english_vocabulary.get('definition'),
+                example=english_vocabulary.get('example')
             )
 
     @classmethod
     def instantiate_from_xlsx(cls, file):
-        # read xl
         data = pd.read_excel(file, sheet_name='Tabelle1')
-        # change NaN values to None
         data = data.where(pd.notnull(data), None)
 
-        # iterate over DataFrame and assign values
         for index, rows in data.iterrows():
+            # Dynamically collect all translation columns following the tl# naming scheme
+            translations = [rows[col] for col in rows.index if col.startswith('tl') and rows[col] is not None]
 
             English(
-                vocabulary = rows['vocabulary'],
-                tl1 = rows['tl1'],
-                tl2 = rows['tl2'],
-                tl3 = rows['tl3'],
-                pronunc = rows['pronunc'],
-                definition = rows['definition'],
-                example = None
-            )        
+                vocabulary=rows['vocabulary'],
+                translations=translations,
+                pronunc=rows['pronunc'],
+                definition=rows['definition'],
+                example=rows['example']
+            )    
 
 
     # DO NOT USE THIS METHOD!
@@ -61,28 +57,30 @@ class English(Language):
         return f"INSERT into english_voc (vocabulary, tl1, tl2, tl3, definition) values ({self.vocabulary}, {self.tl1}, {self.tl2}, {self.tl3}, {self.definition});"
 
     @classmethod
-    def instantiate_from_web(cls,vocabulary):
-        
-        import english_util 
+    def instantiate_from_web(cls, vocabulary):
+        import english_util
 
+        # Get data from the website
         code = english_util.get_data_from_website(vocabulary)
 
-        # return if vocabulary is not found
+        # Return if vocabulary is not found
         if code == '404':
-            print(f"{vocabulary} could't be found!")
+            print(f"{vocabulary} couldn't be found!")
             return 
 
-        English(
-            vocabulary = vocabulary,
-            tl1 = english_util.get_translation(vocabulary),
-            tl2 = None,
-            tl3 = None,
-            pronunc = english_util.get_pronunciation(),
-            definition = english_util.get_definition(),
-            example = english_util.get_example_sentence()
+        # Collect translations dynamically from english_util -> right now a bit unnecerssary but it might 
+        translations = english_util.get_translations(vocabulary)
 
+        # Create the English instance
+        English(
+            vocabulary=vocabulary,
+            translations=translations,
+            pronunc=english_util.get_pronunciation(),
+            definition=english_util.get_definition(),
+            example=english_util.get_example_sentence()
         )
-        
+
+        # Clean up downloaded files
         os.remove('oxf.html')
 
 

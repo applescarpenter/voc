@@ -21,6 +21,10 @@ GET_ENGLISH_ALL_VOCABULARIES = """
     SELECT * FROM "english_voc"
 """
 
+GET_ENGLISH_TRANSLATION_FOR_VOCABULARY = """
+    SELECT translation_text FROM english_voc_translation where vocabulary_id = %s;
+"""
+
 GET_ENGLISH_VOCABULARY_ROW_COUNT = """
     SELECT COUNT(*) FROM "english_voc" where vocabulary = %s;
 """

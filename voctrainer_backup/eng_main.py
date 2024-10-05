@@ -41,23 +41,37 @@ probably I should fix this some time
 """
 def vocabulary_test(amount=10):
     cnxn = db.db_connection()
-    vocs = cnxn.get_data(SQL(eq.GET_ENGLISH_ALL_VOCABULARIES),())
+    vocs = cnxn.get_data(SQL(eq.GET_ENGLISH_ALL_VOCABULARIES), ())
 
-    for i in range(0,amount):
+    for i in range(0, amount):
         random_int = randint(0, len(vocs)-i)
-        
-        # give user definition and wait for input
-        voc = vocs[random_int]
-        print(voc['definition'])
-        user_input = input()
 
-        # check if user gave correct answer
-        if user_input == voc['vocabulary']:
-            print(f"Correct! eng: {voc['vocabulary']}, ger: {voc['tl1']}, pronunciation: {voc['pronunc']}, example: {voc['example_sentence']}")
+        # Give the user the definition and wait for input
+        voc = vocs[random_int]
+
+        print(type(voc['vocabulary_id']))
+
+        # Fetch all translations for the given vocabulary
+        translations = cnxn.get_data(SQL(eq.GET_ENGLISH_TRANSLATION_FOR_VOCABULARY), (voc['vocabulary_id'],))
+
+        # Extract the translations into a list, ignoring None values
+        translations_list = [t['translation_text'] for t in translations if t['translation_text'] is not None]
+
+        # Show the definition to the user
+        print(voc['definition'])
+        user_input = input("Your guess: ")
+
+        # Check if the user's input matches any of the translations
+        if user_input in translations_list or user_input == voc['vocabulary']:
+            print(f"Correct! eng: {voc['vocabulary']}, translations: {', '.join(translations_list)}, "
+                  f"pronunciation: {voc['pronunc']}, example: {voc['example_sentence']}")
         else:
-            print(f"False! eng: {voc['vocabulary']}, ger: {voc['tl1']}, pronunciation: {voc['pronunc']}, example: {voc['example_sentence']}")
-        
+            print(f"False! eng: {voc['vocabulary']}, translations: {', '.join(translations_list)}, "
+                  f"pronunciation: {voc['pronunc']}, example: {voc['example_sentence']}")
+
+        # Remove the selected vocabulary from the list to avoid repetition
         vocs.pop(random_int)
+
 
 
 
@@ -96,6 +110,9 @@ create_object_via_web('intrigue')
 insert_objects_into_db()
 """
 
-#vocabulary_test()
+
+if __name__ == "__main__":
+    
+    vocabulary_test()
 
 

@@ -1,14 +1,21 @@
 class Language:
-    def __init__(self, vocabulary,tl1, tl2=None, tl3=None, pronunc=None, definition=None, example=None) -> None:
+    def __init__(self, vocabulary, translations=None, pronunc=None, definition=None, example=None) -> None:
         self.vocabulary = vocabulary
-        self.tl1 = tl1
-        self.tl2 = tl2
-        self.tl3 = tl3
+        if isinstance(translations, str):
+            # Wrap the string in a list if a single translation is passed as a string
+            self.translations = [translations]
+        else:
+            # Ensure translations is a list (or set to an empty list if None)
+            self.translations = translations if translations is not None else []
         self.pronunc = pronunc
         self.definition = definition
         self.example = example
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.vocabulary}, {self.tl1}, {self.tl2}, {self.tl3}, {self.pronunc}, {self.definition}, {self.example})"
-
-
+        translations_repr = ", ".join(self.translations) if self.translations else "No translations"
+        return (f"{self.__class__.__name__}("
+                f"vocabulary={self.vocabulary}, "
+                f"translations=[{translations_repr}], "
+                f"pronunc={self.pronunc}, "
+                f"definition={self.definition}, "
+                f"example={self.example})")
